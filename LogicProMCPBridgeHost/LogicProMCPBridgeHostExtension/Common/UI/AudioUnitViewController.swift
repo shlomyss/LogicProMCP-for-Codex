@@ -71,28 +71,10 @@ public class AudioUnitViewController: AUViewController, AUAudioUnitFactory {
 				return audioUnit!
 			}
 			
-			defer {
-				// Configure the SwiftUI view after creating the AU, instead of in viewDidLoad,
-				// so that the parameter tree is set up before we build our @AUParameterUI properties
-				DispatchQueue.main.async {
-					self.configureSwiftUIView(audioUnit: audioUnit)
-				}
-			}
-			
-			audioUnit.setupParameterTree(LogicProMCPBridgeHostExtensionParameterSpecs.createAUParameterTree())
-			
-			self.observation = audioUnit.observe(\.allParameterValues, options: [.new]) { object, change in
-				guard let tree = audioUnit.parameterTree else { return }
-				
-				// This insures the Audio Unit gets initial values from the host.
-				for param in tree.allParameters { param.value = param.value }
-			}
-			
-			guard audioUnit.parameterTree != nil else {
-				log.error("Unable to access AU ParameterTree")
-				return audioUnit
-			}
-			
+            DispatchQueue.main.async {
+                self.configureSwiftUIView(audioUnit: audioUnit)
+            }
+
 			return audioUnit
 		}
 	}

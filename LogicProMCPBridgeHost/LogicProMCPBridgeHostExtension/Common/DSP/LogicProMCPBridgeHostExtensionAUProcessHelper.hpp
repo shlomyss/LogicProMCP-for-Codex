@@ -25,31 +25,30 @@ public:
      Call it inside your internalRenderBlock.
      */
     void processWithEvents(AudioTimeStamp const *timestamp, AUAudioFrameCount frameCount, AURenderEvent const *events) {
-        
+        if (timestamp == nullptr || frameCount == 0) {
+            return;
+        }
+
         AUEventSampleTime now = AUEventSampleTime(timestamp->mSampleTime);
         AUAudioFrameCount framesRemaining = frameCount;
-        AURenderEvent const *nextEvent = events; // events is a linked list, at the beginning, the nextEvent is the first event
+        AURenderEvent const *nextEvent = events;
         
         while (framesRemaining > 0) {
-            // If there are no more events, we can process the entire remaining segment and exit.
             if (nextEvent == nullptr) {
                 mKernel.process(now, framesRemaining);
                 return;
             }
             
-            // **** start late events late.
-            auto timeZero = AUEventSampleTime(0);
-            auto headEventTime = nextEvent->head.eventSampleTime;
-            AUAudioFrameCount framesThisSegment = AUAudioFrameCount(std::max(timeZero, headEventTime - now));
-            
-            // Compute everything before the next event.
+            const auto eventOffset = std::max(AUEventSampleTime(0), nextEvent->head.eventSampleTime - now);
+            if (eventOffset > AUEventSampleTime(framesRemaining)) {
+                mKernel.process(now, framesRemaining);
+                return;
+            }
+
+            const AUAudioFrameCount framesThisSegment = AUAudioFrameCount(eventOffset);
             if (framesThisSegment > 0) {
                 mKernel.process(now, framesThisSegment);
-                
-                // Advance frames.
                 framesRemaining -= framesThisSegment;
-                
-                // Advance time.
                 now += AUEventSampleTime(framesThisSegment);
             }
             
@@ -83,6 +82,10 @@ public:
                                   const AURenderEvent                        *events,
                                   AURenderPullInputBlock __unsafe_unretained pullInputBlock) {
             
+            if (timestamp == nullptr || outputData == nullptr) {
+                return kAudioUnitErr_InvalidParameter;
+            }
+
             if (frameCount > mKernel.maximumFramesToRender()) {
                 return kAudioUnitErr_TooManyFramesToProcess;
             }

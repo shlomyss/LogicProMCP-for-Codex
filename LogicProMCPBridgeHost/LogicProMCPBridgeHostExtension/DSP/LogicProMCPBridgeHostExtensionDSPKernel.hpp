@@ -28,6 +28,9 @@ public:
     }
     
     void deInitialize() {
+        mMIDIOutBlock = nullptr;
+        mShouldSendNoteOn = false;
+        mNoteIsCurrentlyOn = false;
     }
     
     // MARK: - Bypass
@@ -43,11 +46,13 @@ public:
     // Add a case for each parameter in LogicProMCPBridgeHostExtensionParameterAddresses.h
     void setParameter(AUParameterAddress address, AUValue value) {
         switch (address) {
-            case LogicProMCPBridgeHostExtensionParameterAddress::midiNoteNumber:
-                mNextNoteToSend = (uint8_t)value;
+            case LogicProMCPBridgeHostExtensionParameterAddress::midiNoteNumber: {
+                const auto clamped = std::clamp(value, AUValue(0), AUValue(127));
+                mNextNoteToSend = static_cast<uint8_t>(clamped);
                 break;
+            }
             case LogicProMCPBridgeHostExtensionParameterAddress::sendNote:
-                mShouldSendNoteOn = (bool)value;
+                mShouldSendNoteOn = value >= 0.5f;
                 break;
         }
     }
@@ -60,7 +65,7 @@ public:
                 return (AUValue)mNextNoteToSend;
                 
             case LogicProMCPBridgeHostExtensionParameterAddress::sendNote:
-                return (AUValue)mShouldSendNoteOn;
+                return mShouldSendNoteOn ? 1.f : 0.f;
                 
             default: return 0.f;
         }
@@ -73,11 +78,6 @@ public:
     
     void setMaximumFramesToRender(const AUAudioFrameCount &maxFrames) {
         mMaxFramesToRender = maxFrames;
-    }
-    
-    // MARK: - Musical Context
-    void setMusicalContextBlock(AUHostMusicalContextBlock contextBlock) {
-        mMusicalContextBlock = contextBlock;
     }
     
     // MARK: - MIDI Output
@@ -100,17 +100,6 @@ public:
         
         if (mBypassed) { return; }
         
-        // Use this to get Musical context info from the Plugin Host,
-        // Replace nullptr with &memberVariable according to the AUHostMusicalContextBlock function signature
-        if (mMusicalContextBlock) {
-            mMusicalContextBlock(nullptr /* currentTempo */,
-                                 nullptr /* timeSignatureNumerator */,
-                                 nullptr /* timeSignatureDenominator */,
-                                 nullptr /* currentBeatPosition */,
-                                 nullptr /* sampleOffsetToNextBeat */,
-                                 nullptr /* currentMeasureDownbeatPosition */);
-        }
-        
         /*
          // If you require sample-accurate sequencing, calculate your midi events based on the frame and buffer offsets
          
@@ -120,25 +109,8 @@ public:
          }
          */
         
-        // Do your midi processing here
-        
-        if (mShouldSendNoteOn && !mNoteIsCurrentlyOn) {
-            // note was not on, but should be - send a new note-on
-            sendNoteOn(bufferStartTime, mNextNoteToSend, kMaxVelocity);
-            mLastSentNote = mNextNoteToSend;
-            mNoteIsCurrentlyOn = true;
-            
-        } else if (mShouldSendNoteOn && mNoteIsCurrentlyOn && mLastSentNote != mNextNoteToSend) {
-            // note was on, but the note number changed - send a note off for the old note, and send a note-on for the new one
-            sendNoteOff(bufferStartTime, mLastSentNote, 0);
-            sendNoteOn(bufferStartTime, mNextNoteToSend, kMaxVelocity);
-            mLastSentNote = mNextNoteToSend;
-            
-        } else if (!mShouldSendNoteOn && mNoteIsCurrentlyOn) {
-            // note was on but should turn off
-            sendNoteOff(bufferStartTime, mLastSentNote, 0);
-            mNoteIsCurrentlyOn = false;
-        }
+        // Keep the baseline AU passive and side-effect free.
+
         
     }
     
@@ -194,10 +166,7 @@ public:
          };
          MIDIEventListForEachEvent(&midiEvent->eventList, visitor, this);
          */
-        if (mMIDIOutBlock)
-        {
-            mMIDIOutBlock(now, 0, &midiEvent->eventList);
-        }
+        // MIDI forwarding will be added with the bridge capture path.
     }
     
     void handleParameterEvent(AUEventSampleTime now, AUParameterEvent const& parameterEvent) {
@@ -205,8 +174,6 @@ public:
     }
     
     // MARK: Member Variables
-    AUHostMusicalContextBlock mMusicalContextBlock = nullptr;
-    
     double mSampleRate = 44100.0;
     bool mBypassed = false;
     AUAudioFrameCount mMaxFramesToRender = 1024;
@@ -214,6 +181,6 @@ public:
     bool mShouldSendNoteOn = false;  //  Should we send a note-on next process?
     bool mNoteIsCurrentlyOn = false;  //  Have we sent a note-on without a matching note off?
     uint8_t mLastSentNote = 255;
-    uint8_t mNextNoteToSend = 255;
+    uint8_t mNextNoteToSend = 60;
     AUMIDIEventListBlock mMIDIOutBlock = nullptr;
 };

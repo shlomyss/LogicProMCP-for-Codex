@@ -59,25 +59,28 @@ public class LogicProMCPBridgeHostExtensionAudioUnit: AUAudioUnit, @unchecked Se
 
     // MARK: - Rendering
     public override var internalRenderBlock: AUInternalRenderBlock {
+        guard processHelper != nil else {
+            return { _, _, _, _, _, _, _ in kAudioUnitErr_Uninitialized }
+        }
         return processHelper!.internalRenderBlock()
     }
 
     // Allocate resources required to render.
     // Subclassers should call the superclass implementation.
-    public override func allocateRenderResources() throws {		
-        kernel.setMusicalContextBlock(self.musicalContextBlock)
-        kernel.setMIDIOutputEventBlock(self.midiOutputEventListBlock);
-        kernel.initialize(outputBus!.format.sampleRate)
-		try super.allocateRenderResources()
-	}
+    public override func allocateRenderResources() throws {
+        guard let outputBus else {
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(kAudioUnitErr_Uninitialized))
+        }
+
+        kernel.initialize(outputBus.format.sampleRate)
+        try super.allocateRenderResources()
+    }
 
     // Deallocate resources allocated in allocateRenderResourcesAndReturnError:
     // Subclassers should call the superclass implementation.
     public override func deallocateRenderResources() {
         
-        // Deallocate your resources.
         kernel.deInitialize()
-        
         super.deallocateRenderResources()
     }
 

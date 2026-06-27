@@ -14,13 +14,13 @@
 					<key>factoryFunction</key>
 					<string>$(PRODUCT_MODULE_NAME).AudioUnitViewController</string>
 					<key>manufacturer</key>
-					<string>aumi</string>
+					<string>THDt</string>
 					<key>name</key>
 					<string>THDt: LogicProMCPBridgeHostExtension</string>
 					<key>sandboxSafe</key>
 					<true/>
 					<key>subtype</key>
-					<string>aumi</string>
+					<string>LMCP</string>
 					<key>tags</key>
 					<array>
 						<string>MIDI Processor</string>

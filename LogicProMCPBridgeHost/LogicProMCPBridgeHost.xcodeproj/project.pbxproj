@@ -43,6 +43,7 @@
 		296867F12FF019A500DB9C80 /* Exceptions for "LogicProMCPBridgeHostExtension" folder in "LogicProMCPBridgeHostExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				LogicProMCPBridgeHostExtension.entitlements,
 				Info.plist,
 			);
 			target = 296867C52FF019A500DB9C80 /* LogicProMCPBridgeHostExtension */;
@@ -248,6 +249,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = LogicProMCPBridgeHostExtension/LogicProMCPBridgeHostExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 33R678SNFS;
@@ -293,6 +295,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = LogicProMCPBridgeHostExtension/LogicProMCPBridgeHostExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 33R678SNFS;

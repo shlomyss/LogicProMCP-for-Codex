@@ -143,6 +143,7 @@ public:
     }
     
     void sendNoteOn(AUEventSampleTime sampleTime, uint8_t noteNum, uint16_t velocity) {
+        if (!mMIDIOutBlock) { return; }
         auto message = MIDI2NoteOn(0, 0, noteNum, 0, 0, velocity);
         MIDIEventList eventList = {};
         MIDIEventPacket *packet = MIDIEventListInit(&eventList, kMIDIProtocol_2_0);
@@ -151,6 +152,7 @@ public:
     }
     
     void sendNoteOff(AUEventSampleTime sampleTime, uint8_t noteNum, uint16_t velocity) {
+        if (!mMIDIOutBlock) { return; }
         auto message = MIDI2NoteOff(0, 0, noteNum, 0, 0, velocity);
         MIDIEventList eventList = {};
         MIDIEventPacket *packet = MIDIEventListInit(&eventList, kMIDIProtocol_2_0);
@@ -203,7 +205,7 @@ public:
     }
     
     // MARK: Member Variables
-    AUHostMusicalContextBlock mMusicalContextBlock;
+    AUHostMusicalContextBlock mMusicalContextBlock = nullptr;
     
     double mSampleRate = 44100.0;
     bool mBypassed = false;
@@ -213,5 +215,5 @@ public:
     bool mNoteIsCurrentlyOn = false;  //  Have we sent a note-on without a matching note off?
     uint8_t mLastSentNote = 255;
     uint8_t mNextNoteToSend = 255;
-    AUMIDIEventListBlock mMIDIOutBlock;
+    AUMIDIEventListBlock mMIDIOutBlock = nullptr;
 };

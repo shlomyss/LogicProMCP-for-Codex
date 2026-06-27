@@ -103,10 +103,7 @@ public class AudioUnitViewController: AUViewController, AUAudioUnitFactory {
             host.view.removeFromSuperview()
         }
         
-        guard let observableParameterTree = audioUnit.observableParameterTree else {
-            return
-        }
-        let content = LogicProMCPBridgeHostExtensionMainView(parameterTree: observableParameterTree)
+        let content = LogicProMCPBridgeHostExtensionMainView()
         let host = HostingController(rootView: content)
         self.addChild(host)
         host.view.frame = self.view.bounds

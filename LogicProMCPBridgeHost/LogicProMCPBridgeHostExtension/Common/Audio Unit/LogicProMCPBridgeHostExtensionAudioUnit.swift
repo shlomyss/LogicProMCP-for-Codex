@@ -100,15 +100,21 @@ public class LogicProMCPBridgeHostExtensionAudioUnit: AUAudioUnit, @unchecked Se
 
 		// implementorValueProvider is called when the value needs to be refreshed.
 		parameterTree?.implementorValueProvider = { [weak self] param in
-            return self!.kernel.getParameter(param.address)
+            guard let self else { return param.value }
+            return self.kernel.getParameter(param.address)
 		}
 
-		// A function to provide string representations of parameter values.
-		parameterTree?.implementorStringFromValueCallback = { param, valuePtr in
+		// Keep this callback allocation-free and locale-independent for hosts that
+		// query parameter strings during AU discovery/loading.
+		parameterTree?.implementorStringFromValueCallback = { _, valuePtr in
 			guard let value = valuePtr?.pointee else {
-				return "-"
+				return ""
 			}
-			return NSString.localizedStringWithFormat("%.f", value) as String
+            let rounded = value.rounded()
+            if rounded == value {
+                return String(Int(rounded))
+            }
+            return String(value)
 		}
 	}
 }

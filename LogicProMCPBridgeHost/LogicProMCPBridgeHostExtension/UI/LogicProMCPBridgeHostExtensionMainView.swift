@@ -8,16 +8,15 @@
 import SwiftUI
 
 struct LogicProMCPBridgeHostExtensionMainView: View {
-    var parameterTree: ObservableAUParameterGroup
-    
     var body: some View {
-        VStack {
-            ParameterSlider(param: parameterTree.global.midiNoteNumber)
-                .padding()
-            MomentaryButton(
-                "Play note",
-                param: parameterTree.global.sendNote
-            )
+        VStack(alignment: .leading, spacing: 8) {
+            Text(verbatim: "LogicProMCP")
+                .font(.headline)
+            Text(verbatim: "Bridge MIDI processor loaded")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
+        .padding(16)
+        .frame(minWidth: 280, minHeight: 120, alignment: .leading)
     }
 }

@@ -7,4 +7,7 @@ build/
 dist/
 *.egg-info/
 DerivedData/
+xcuserdata/
+*.xcuserdatad/
+*.xcuserstate
 *.xcuserdata/

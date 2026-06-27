@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "logicpro": {
+      "command": "/Users/shlomy/GIT_Repos/LogicProMCP/.venv/bin/logicpromcp"
+    }
+  }
+}

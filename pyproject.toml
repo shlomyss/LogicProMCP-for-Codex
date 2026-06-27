@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "logicpromcp"
+version = "0.1.0"
+description = "A Model Context Protocol bridge for generating and inspecting Logic Pro MIDI regions."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "LogicProMCP contributors" }
+]
+dependencies = [
+  "mcp>=1.0.0"
+]
+
+[project.scripts]
+logicpromcp = "logicpromcp.server:main"
+logicpromcp-midi = "logicpromcp.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/logicpromcp"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
